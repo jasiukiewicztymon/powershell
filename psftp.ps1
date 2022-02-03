@@ -78,8 +78,13 @@ switch ($choice) {
         $profilname = Read-Host -Prompt 'Profil name';
         $profilpassword = Read-host 'Password' -AsSecureString;
 
+        $profilpath = ".\FTP\Profil\$profilname";
 
+        foreach ($line in [System.IO.File]::ReadLines($profilpath)) {
+            $line
+        }
 
+        pause
         Clear-Host
     }
     default {
