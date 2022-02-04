@@ -8,6 +8,11 @@ $choice = Read-Host ;
 
 Clear-Host
 
+function ftp ($a, $b, $c) {
+    $Client = Connect-FTP -Server $a -Verbose -Username $b -Password $c
+    Disconnect-FTP -Client $Client
+}
+
 switch ($choice) {
     1 {
         $hostname = Read-Host -Prompt 'Host';
@@ -24,7 +29,8 @@ switch ($choice) {
             New-Item -Path "." -Name "FTP" -ItemType "directory" -Force 
         }
 
-        New-Item -Path ".\FTP\connect.sav" -Value $output -ItemType File -Force
+        #if using bat
+        #New-Item -Path ".\FTP\connect.sav" -Value $output -ItemType File -Force
         Clear-Host
 
         Write-Output 'Do you want do save the profil? [y/n]';
