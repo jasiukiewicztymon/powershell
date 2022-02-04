@@ -1,5 +1,3 @@
-﻿$scriptPath = split-path -parent $MyInvocation.MyCommand.Definition
-Write-Output $scriptPath
 Write-Output "Connect your ftp";
 Write-Output "";
 Write-Output "[1] - Connect new profil";
@@ -32,6 +30,18 @@ switch ($choice) {
         Write-Output 'Do you want do save the profil? [y/n]';
         Write-Output "";
         $save = Read-Host;
+
+        $stringkey = '';
+        $key = @();
+        for (($i = 0); $i -lt 24; $i++) {
+            $key = $key + (Get-Random -Minimum 1 -Maximum 150);
+            if ($i -eq 0) {
+                $stringkey = $stringkey + $key[$i];
+            }
+            else {
+                $stringkey = $stringkey + ',' + $key[$i];
+            }
+        }
         
         if ($save -eq "y") {
             Clear-Host
@@ -39,17 +49,21 @@ switch ($choice) {
             $savepath = ".\FTP\Profil\$profilname"
 
             $securehostname = $hostname | ConvertTo-SecureString -AsPlainText -Force
-            $encryptedhostname = $securehostname | ConvertFrom-SecureString
+            $encryptedhostname = ConvertFrom-SecureString -SecureString $securehostname -Key $key
 
             $secureusername = $username | ConvertTo-SecureString -AsPlainText -Force
-            $encryptedusername = $secureusername | ConvertFrom-SecureString
+            $encryptedusername = ConvertFrom-SecureString -SecureString $secureusername -Key $key
 
             $secureunpassword = $unpassword | ConvertTo-SecureString -AsPlainText -Force
-            $encryptedunpassword = $secureunpassword | ConvertFrom-SecureString
+            $encryptedunpassword = ConvertFrom-SecureString -SecureString $secureunpassword -Key $key
 
-            $saveoutput = "$profilname,$encryptedhostname,$encryptedusername,$encryptedunpassword"
+            $saveoutput = "$encryptedhostname,$encryptedusername,$encryptedunpassword"
 
             New-Item -Path $savepath -Value $saveoutput -ItemType File -Force | Out-Null
+
+            Write-Output ''
+            Write-Output "Your key: $stringkey" 
+            pause
         }
         else {
             if ($save -eq "Y") {
@@ -58,17 +72,21 @@ switch ($choice) {
                 $savepath = ".\FTP\Profil\$profilname"
 
                 $securehostname = $hostname | ConvertTo-SecureString -AsPlainText -Force
-                $encryptedhostname = $securehostname | ConvertFrom-SecureString
+                $encryptedhostname = ConvertFrom-SecureString -SecureString $securehostname -Key $key
 
                 $secureusername = $username | ConvertTo-SecureString -AsPlainText -Force
-                $encryptedusername = $secureusername | ConvertFrom-SecureString
+                $encryptedusername = ConvertFrom-SecureString -SecureString $secureusername -Key $key
 
                 $secureunpassword = $unpassword | ConvertTo-SecureString -AsPlainText -Force
-                $encryptedunpassword = $secureunpassword | ConvertFrom-SecureString
+                $encryptedunpassword = ConvertFrom-SecureString -SecureString $secureunpassword -Key $key
 
-                $saveoutput = "$profilname,$encryptedhostname,$encryptedusername,$encryptedunpassword"
+                $saveoutput = "$encryptedhostname,$encryptedusername,$encryptedunpassword"
 
                 New-Item -Path $savepath -Value $saveoutput -ItemType File -Force | Out-Null
+
+                Write-Output ''
+                Write-Output "Your key: $stringkey" 
+                pause
             }
         }
 
@@ -76,14 +94,46 @@ switch ($choice) {
     }
     2 {
         $profilname = Read-Host -Prompt 'Profil name';
-        $profilpassword = Read-host 'Password' -AsSecureString;
+        $profilpassword = Read-host 'Key';
 
         $profilpath = ".\FTP\Profil\$profilname";
 
-        foreach ($line in [System.IO.File]::ReadLines($profilpath)) {
-            $line
-        }
+        $line = [System.IO.File]::ReadLines($profilpath);
+        $args = $line.Split(',');
 
+        $strkey = $profilpassword.Split(",") 
+        $key = @()
+
+        if ($strkey.Length -eq 24) {
+            for (($i = 0); $i -lt $strkey.Length; $i++) {
+                $key = $key + [int]$strkey[$i]
+            }
+            try {
+                $secureht = ConvertTo-SecureString -String $args[0] -Key $key -ErrorAction Stop
+                $decryptedht = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureht)
+                $decryptedht = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($decryptedht)
+
+                $secureusr = ConvertTo-SecureString -String $args[1] -Key $key
+                $decryptedusr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureusr)
+                $decryptedusr = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($decryptedusr)
+
+                $secureps = ConvertTo-SecureString -String $args[2] -Key $key
+                $decryptedps = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureps)
+                $decryptedps = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($decryptedps)
+
+                $decryptedht
+                $decryptedusr
+                $decryptedps
+            }
+            catch {
+                Write-Warning -Message "Wrong key"
+            }
+                 
+        }
+        else {
+            Write-Warning -Message "Wrong key"
+        }          
+       
         pause
         Clear-Host
     }
