@@ -127,7 +127,7 @@ switch ($choice) {
                 $decryptedps = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureps)
                 $decryptedps = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($decryptedps)
 
-                $decryptedht
+                ftp $decryptedht
                 $decryptedusr
                 $decryptedps
             }
