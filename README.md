@@ -1,3 +1,3 @@
-# Powershell connector
+# Powershell 
 
-- [ ] connection by ftp
+Here you can find my powershell code
