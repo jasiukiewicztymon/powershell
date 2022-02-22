@@ -1,3 +1,3 @@
 # Powershell 
 
-Here you can find my powershell code
+Learning powershell myself with youtube and docs ☺
